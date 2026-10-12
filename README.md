@@ -7,6 +7,8 @@
 It reads the structural drawings, finds the steel in the footage, and reports every member that is
 missing, moved, or the wrong size, with the drawing and the video frames as evidence.
 
+**[▶ Try the live demo](https://delimiter-ashish.github.io/ferrosight/demo/)**
+
 ![FerroSight finding a missing brace](docs/hero.gif)
 
 </div>

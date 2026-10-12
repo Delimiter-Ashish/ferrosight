@@ -119,7 +119,7 @@ def create_app(data: Path) -> FastAPI:
     @app.get("/api/scenes/{name}/drawing/{member_id}.png")
     def drawing(name: str, member_id: str):
         s, c, m = member(name, member_id)
-        evs = sorted(c.get("evidence", []), key=lambda e: (not e["sheet"].startswith("S-1"), "line_px" not in e))
+        evs = sorted([e for e in c.get("evidence", []) if "line_px" in e or "tag_bbox_px" in e], key=lambda e: (not e["sheet"].startswith("S-1"), "line_px" not in e))
         if not evs:
             raise HTTPException(404, "member not marked on any sheet")
         e = evs[0]

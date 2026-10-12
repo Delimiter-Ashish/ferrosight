@@ -25,8 +25,8 @@ from ..verify.verify import outcome
 
 STATIC = Path(__file__).with_name("static")
 SCENE_RE = re.compile(r"^scene_\d{4}$")
-BGR = {"flag: absent": (48, 48, 220), "flag: wrong size": (0, 130, 255), "review": (0, 190, 235),
-       "passed": (70, 170, 60), "not visible": (150, 150, 150)}
+BGR = {"flag: absent": (58, 82, 210), "flag: wrong size": (0, 169, 242), "review": (224, 198, 108),
+       "passed": (180, 167, 154), "not visible": (132, 111, 91)}   # same colours as the 3D demo
 
 
 def png(img) -> Response:

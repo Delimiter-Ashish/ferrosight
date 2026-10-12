@@ -71,6 +71,27 @@ comes from the generator, so every number below is measured, not eyeballed.
 
 The size threshold was learned on buildings 0-9 and tested on buildings 10-19.
 
+## Can a vision-language model do this instead?
+
+The same benchmark was given to off-the-shelf VLMs (Qwen2.5-VL, 3B and 7B). Each was shown the
+drawing crop and two site photos with the member's expected position outlined, drawn in neutral
+blue so the images never hint at the answer, and asked whether the member is there and whether it
+is the drawn size. Asked about every planted defect plus 20 correct members per building.
+
+| | Qwen2.5-VL-3B | Qwen2.5-VL-7B | FerroSight (geometric) |
+| --- | ---: | ---: | ---: |
+| Reads the section label on the drawing | 87% | 88% | 100% |
+| Says "missing" for members that really are missing or moved | 0/21 | 10/21 | 17/21 flagged |
+| Says "missing" for members that are actually there | 0/394 | 89/394 | 0/394 |
+| Ever answers "same size as drawn" | 52/426 | 0/426 | n/a |
+
+**Finding:** off-the-shelf VLMs read drawings reasonably well but cannot yet verify construction.
+The 3B model says every member is present. The 7B model has a weak signal for presence (it
+catches about half the absences, with roughly nine false alarms for each real one) and no signal
+for size: it never says a member matches its drawing. Using the 7B to decide FerroSight's
+"review" cases added false alarms and no catches. Measured geometry wins by a wide margin, which
+is why FerroSight is built on it, and why this benchmark is useful for measuring future models.
+
 ## Why synthetic data
 
 No public dataset pairs structural drawings with site footage and labelled construction mistakes.

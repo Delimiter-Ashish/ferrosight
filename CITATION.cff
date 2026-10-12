@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use FerroSight or its benchmark, please cite it as below."
+title: "FerroSight: checking steel construction against its drawings from site video"
+authors:
+  - family-names: Joshi
+    given-names: Ashish
+repository-code: "https://github.com/Delimiter-Ashish/ferrosight"
+url: "https://delimiter-ashish.github.io/ferrosight/demo/"
+license: Apache-2.0
+date-released: "2026-10-12"

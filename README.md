@@ -149,7 +149,20 @@ python -m ferrosight.app.server --data data/synth --port 8050
 
 ## Next
 
+- Teach the VLM: fine-tune Qwen2.5-VL on separate synthetic buildings, then rerun this exact
+  benchmark to measure how much targeted training closes the gap
 - Real footage, with camera poses recovered from the video itself
-- Vision-language models on the same benchmark: do they understand engineering drawings?
+- Heavily damaged drawings: let a vision-language model read the titles and dimensions that OCR
+  cannot
 - Active viewing: an agent that decides where to film next to resolve "not visible" members
-- A free live demo of the viewer on GitHub Pages
+- Release the generator and benchmark as a public dataset for drawing-versus-site verification
+
+## License
+
+Copyright 2026 Ashish Joshi. Released under the [Apache License 2.0](LICENSE).
+You may use, change and share this code, including commercially, as long as you keep the
+[NOTICE](NOTICE) file and credit **FerroSight by Ashish Joshi** with a link to this repository.
+If you use it in research, please cite it ([CITATION.cff](CITATION.cff)).
+
+The licence covers this repository's code. Models it downloads (SAM 3, Qwen2.5-VL) keep their own
+licences.

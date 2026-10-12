@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FerroSight</title>
+<style>
+  :root {
+    --paper: #f4f2ee; --panel: #ffffff; --ink: #1c1d1f; --muted: #6b6e73; --line: #e2dfd8;
+    --absent: #dc3030; --size: #ff8200; --review: #e8b400; --passed: #3caa46; --hidden: #9a9a9a;
+    --accent: #ff6a13;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink);
+         font: 14px/1.45 Inter, "Segoe UI", system-ui, -apple-system, sans-serif; }
+  .mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+  header { display: flex; align-items: center; gap: 20px; padding: 14px 24px; background: var(--ink); color: #fff; flex-wrap: wrap; }
+  .brand { font-weight: 700; font-size: 18px; letter-spacing: .02em; }
+  .brand span { color: var(--accent); }
+  .sub { color: #a9abb0; font-size: 13px; }
+  select { font: inherit; padding: 6px 10px; border-radius: 6px; border: 1px solid #44464b; background: #2a2b2e; color: #fff; }
+  .chips { display: flex; gap: 8px; margin-left: auto; flex-wrap: wrap; }
+  .chip { padding: 4px 10px; border-radius: 999px; background: #2a2b2e; font-size: 12px; white-space: nowrap; }
+  .chip b { margin-right: 4px; }
+  .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
+  main { display: grid; grid-template-columns: 380px 1fr; gap: 18px; padding: 18px 24px; max-width: 1500px; margin: 0 auto; }
+  @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; }
+  .tabs { display: flex; border-bottom: 1px solid var(--line); }
+  .tab { flex: 1; padding: 10px; text-align: center; cursor: pointer; color: var(--muted); border-bottom: 2px solid transparent; }
+  .tab.on { color: var(--ink); border-color: var(--accent); font-weight: 600; }
+  .list { max-height: calc(100vh - 170px); overflow-y: auto; }
+  .row { padding: 10px 14px; border-bottom: 1px solid var(--line); cursor: pointer; }
+  .row:hover { background: #faf9f6; }
+  .row.sel { background: #fff4ec; box-shadow: inset 3px 0 0 var(--accent); }
+  .row .id { font-weight: 600; }
+  .row .meta { color: var(--muted); font-size: 12px; }
+  .empty { padding: 30px; color: var(--muted); text-align: center; }
+  .detail { padding: 20px 22px; }
+  .dhead { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .dhead h2 { margin: 0; font-size: 22px; }
+  .badge { padding: 3px 10px; border-radius: 999px; color: #fff; font-size: 12px; font-weight: 600; }
+  .truth { padding: 3px 10px; border-radius: 999px; border: 1px dashed var(--muted); color: var(--muted); font-size: 12px; }
+  .reason { margin: 10px 0 16px; font-size: 15px; }
+  .facts { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-bottom: 20px; }
+  .fact { background: var(--paper); border-radius: 8px; padding: 8px 10px; }
+  .fact .k { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .05em; }
+  .fact .v { font-weight: 600; }
+  h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 18px 0 8px; }
+  .imgs { display: flex; gap: 12px; flex-wrap: wrap; }
+  .imgs img { max-width: 100%; border-radius: 8px; border: 1px solid var(--line); background: #fff; }
+  .frames img { width: calc(33.3% - 8px); min-width: 220px; }
+  .note { color: var(--muted); font-size: 12px; padding: 0 24px 24px; max-width: 1500px; margin: 0 auto; }
+  video { width: 100%; border-radius: 8px; margin-top: 8px; }
+</style>
+</head>
+<body>
+<header>
+  <div><div class="brand">Ferro<span>Sight</span></div><div class="sub">Drawings vs. site footage</div></div>
+  <select id="scene"></select>
+  <div class="chips" id="chips"></div>
+</header>
+<main>
+  <section class="card">
+    <div class="tabs">
+      <div class="tab on" data-f="flagged">Flagged</div>
+      <div class="tab" data-f="review">Review</div>
+      <div class="tab" data-f="all">All</div>
+    </div>
+    <div class="list" id="list"></div>
+  </section>
+  <section class="card detail" id="detail"><div class="empty">Pick a member on the left.</div></section>
+</main>
+<div class="note">Synthetic test buildings. The "answer key" pill shows what was really built, so the results can be checked; the system itself never sees it.</div>
+<script>
+const COLORS = {"flag: absent": "var(--absent)", "flag: wrong size": "var(--size)", "review": "var(--review)",
+                "passed": "var(--passed)", "not visible": "var(--hidden)"};
+const LABEL = {"flag: absent": "Absent", "flag: wrong size": "Wrong size", "review": "Review",
+               "passed": "Passed", "not visible": "Not visible"};
+const ORDER = ["flag: absent", "flag: wrong size", "review", "passed", "not visible"];
+let scene = null, filter = "flagged", selected = null;
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+
+async function getJSON(url) { const r = await fetch(url); if (!r.ok) throw new Error(url + " " + r.status); return r.json(); }
+
+async function init() {
+  const scenes = await getJSON("api/scenes");
+  $("scene").innerHTML = scenes.map(s => {
+    const f = (s.counts["flag: absent"] || 0) + (s.counts["flag: wrong size"] || 0);
+    return `<option value="${s.name}">${s.name.replace("scene_", "Building ")} (${f} flagged)</option>`;
+  }).join("");
+  $("scene").onchange = () => loadScene($("scene").value);
+  document.querySelectorAll(".tab").forEach(t => t.onclick = () => {
+    document.querySelectorAll(".tab").forEach(x => x.classList.toggle("on", x === t));
+    filter = t.dataset.f; renderList();
+  });
+  if (scenes.length) loadScene(scenes[0].name);
+}
+
+async function loadScene(name) {
+  scene = await getJSON(`api/scenes/${name}`);
+  selected = null;
+  const cnt = {}; scene.members.forEach(m => cnt[m.outcome] = (cnt[m.outcome] || 0) + 1);
+  $("chips").innerHTML = ORDER.map(o => `<span class="chip"><span class="dot" style="background:${COLORS[o]}"></span><b>${cnt[o] || 0}</b>${LABEL[o]}</span>`).join("");
+  renderList();
+  const first = visible()[0];
+  if (first) select(first.id); else $("detail").innerHTML = '<div class="empty">Nothing flagged in this building.</div>';
+}
+
+function visible() {
+  const ms = scene.members.filter(m =>
+    filter === "all" ? true : filter === "review" ? m.outcome === "review" : m.outcome.startsWith("flag"));
+  return ms.sort((a, b) => ORDER.indexOf(a.outcome) - ORDER.indexOf(b.outcome) || a.id.localeCompare(b.id));
+}
+
+function renderList() {
+  const ms = visible();
+  $("list").innerHTML = ms.length ? ms.map(m => `
+    <div class="row ${m.id === selected ? "sel" : ""}" data-id="${esc(m.id)}">
+      <div><span class="dot" style="background:${COLORS[m.outcome]}"></span><span class="id mono">${esc(m.id)}</span></div>
+      <div class="meta">${esc(m.kind)} · ${esc(m.section || "?")} · grid ${esc(m.grid)} · ${esc(m.reason)}</div>
+    </div>`).join("") : '<div class="empty">Nothing here.</div>';
+  document.querySelectorAll(".row").forEach(r => r.onclick = () => select(r.dataset.id));
+}
+
+function select(id) {
+  selected = id; renderList();
+  const m = scene.members.find(x => x.id === id);
+  const enc = encodeURIComponent(id);
+  const facts = [
+    ["Member", m.kind], ["Drawn section", m.section || "unknown"], ["Grid", m.grid], ["Level", m.level],
+    ["Clear views", m.clear_views], ["Views with steel", m.steel_ratio == null ? "n/a" : Math.round(m.steel_ratio * 100) + "%"],
+  ];
+  if (m.size) facts.push(["Measured / drawn size", m.size.ratio_to_drawn + "x"], ["Looks like", m.size.looks_like]);
+  $("detail").innerHTML = `
+    <div class="dhead">
+      <h2 class="mono">${esc(m.id)}</h2>
+      <span class="badge" style="background:${COLORS[m.outcome]}">${LABEL[m.outcome]}</span>
+      ${m.truth ? `<span class="truth">answer key: ${esc(m.truth.replace("_", " "))}</span>` : ""}
+    </div>
+    <div class="reason">${esc(m.reason)}</div>
+    <div class="facts">${facts.map(([k, v]) => `<div class="fact"><div class="k">${k}</div><div class="v">${esc(v)}</div></div>`).join("")}</div>
+    <h3>On the drawings</h3>
+    <div class="imgs">${m.has_drawing ? `<img src="api/scenes/${scene.name}/drawing/${enc}.png" alt="drawing crop">` : '<span class="empty">Not marked on a sheet (placed from the general notes).</span>'}</div>
+    <h3>On site ${m.frames.length ? "" : "(no usable frames)"}</h3>
+    <div class="imgs frames">${m.frames.map(f => `<img src="api/scenes/${scene.name}/frame/${f}/${enc}.jpg" alt="frame ${f}">`).join("")}</div>
+    ${scene.has_video ? `<h3>Walkthrough</h3><video controls preload="none" src="api/scenes/${scene.name}/video"></video>` : ""}`;
+}
+
+init().catch(e => { $("detail").innerHTML = `<div class="empty">Could not load: ${esc(e.message)}</div>`; });
+</script>
+</body>
+</html>

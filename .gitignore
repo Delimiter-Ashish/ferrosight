@@ -9,3 +9,4 @@ hf/
 pip-cache/
 blender-*/
 *.zip
+docs/*.mp4

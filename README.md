@@ -13,11 +13,20 @@ missing, moved, or the wrong size, with the drawing and the video frames as evid
 
 ## What it does
 
-| | |
-| --- | --- |
-| ![absent](docs/app_absent.png) | **Missing or moved member.** The drawings put a brace at C/2-3. The camera saw that spot clearly in 6 views and found no steel there. |
-| ![wrong size](docs/app_wrong_size.png) | **Wrong size.** The drawings call for a W18x50 beam. On site it measures 0.67x that depth and looks like a W10x49. |
-| ![moved](docs/app_moved.png) | **Nothing is guessed.** Members the camera never saw clearly are reported as "not visible", and unclear ones go to a person for review. |
+**Missing or moved member.** The drawings put a brace at C/2-3. The camera saw that spot clearly in
+6 views and found no steel there.
+
+![missing or moved member](docs/app_absent.png)
+
+**Wrong size.** The drawings call for a W18x50 beam. On site it measures 0.67x that depth and looks
+like a W10x49.
+
+![wrong size](docs/app_wrong_size.png)
+
+**Moved member, seen from 15 views.** Members the camera never saw clearly are reported as
+"not visible", and unclear ones go to a person for review. Nothing is guessed.
+
+![moved member](docs/app_moved.png)
 
 ### Inspection replay
 

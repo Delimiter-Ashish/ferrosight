@@ -69,17 +69,22 @@ def hero(client, data, scene, m, out):
     title = f"{m['id']}: the drawings show a {m['kind']} here."
     sub = "Site footage: no steel in any clear view.  ->  FLAGGED: ABSENT"
     frames_out = []
+    LW, RW, H = 440, 860, 400
+
+    def boxed(img, bw, bh):
+        img = img.copy()
+        img.thumbnail((bw, bh), Image.LANCZOS)
+        box = Image.new("RGB", (bw, bh), DARK)
+        box.paste(img, ((bw - img.width) // 2, (bh - img.height) // 2))
+        return box
+    left = boxed(drawing, LW, H)
     for shot in shots:
-        H = 380
-        a, b = fit_h(drawing, H), fit_h(shot, H)
-        canvas = Image.new("RGB", (a.width + b.width + 30, H + 100), DARK)
-        canvas.paste(a, (10, 90))
-        canvas.paste(b, (a.width + 20, 90))
+        canvas = Image.new("RGB", (LW + RW + 30, H + 100), DARK)
+        canvas.paste(left, (10, 90))
+        canvas.paste(boxed(shot, RW, H), (LW + 20, 90))
         d = ImageDraw.Draw(canvas)
         d.text((14, 14), title, font=font(26), fill=WHITE)
         d.text((14, 52), sub, font=font(18), fill=ORANGE)
-        if canvas.width > 1400:
-            canvas = canvas.resize((1400, round(canvas.height * 1400 / canvas.width)), Image.LANCZOS)
         frames_out.append(canvas.convert("P", palette=Image.ADAPTIVE, colors=200))
     frames_out[0].save(out / "hero.gif", save_all=True, append_images=frames_out[1:], duration=900, loop=0, optimize=True)
 
